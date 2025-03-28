@@ -13,6 +13,13 @@ const routes = {
     "/lorem": "/pages2/lorem.html",
 };
 
+// Disable p5play intro globally when the page first loads
+window.addEventListener('load', () => {
+    if (window.p5play) {
+        window.p5play.disableIntro = true;
+    }
+});
+
 const handleLocation = async () => {
     const path = window.location.pathname;
     const route = routes[path] || routes[404];
@@ -20,10 +27,6 @@ const handleLocation = async () => {
     document.getElementById("main-page").innerHTML = html;
 
     if (path === "/") {
-        if (!localStorage.getItem('introPlayed')) {
-            playIntro();
-            localStorage.setItem('introPlayed', 'true'); 
-        }
         startP5Sketch();
     }
     if (path === "/about") {
@@ -34,13 +37,15 @@ const handleLocation = async () => {
 window.onpopstate = handleLocation;
 window.route = route;
 
-handleLocation();
-
 let p5Instance = null;
-
 const startP5Sketch = () => {
-    if (p5Instance) {
+    if(p5Instance){
         p5Instance.remove();
+    }
+
+    // Ensure p5play intro is disabled before creating new instance
+    if (window.p5play) {
+        window.p5play.disableIntro = true;
     }
 
     let sketch = (p) => {
@@ -57,12 +62,17 @@ const startP5Sketch = () => {
         };
     };
 
-    p5Instance = new p5(sketch, "canvas-container"); // Attach to a div in index.html
+    p5Instance = new p5(sketch, "canvas-container");
 };
 
 const startP5Sketch2 = () => {
-    if (p5Instance) {
+    if(p5Instance){
         p5Instance.remove();
+    }
+
+    // Ensure p5play intro is disabled before creating new instance
+    if (window.p5play) {
+        window.p5play.disableIntro = true;
     }
 
     let sketch = (p) => {
@@ -79,18 +89,8 @@ const startP5Sketch2 = () => {
         };
     };
 
-    p5Instance = new p5(sketch, "canvas-container2"); // Attach to a div in about.html
+    p5Instance = new p5(sketch, "canvas-container2");
 };
 
-const playIntro = () => {
-    // Ensure p5.play is loaded before using createSprite
-    if (typeof createSprite === 'undefined') {
-        console.error('createSprite is not defined. Make sure p5.play is loaded.');
-        return;
-    }
-
-    const introSprite = createSprite(300, 200, 50, 50);
-    introSprite.setAnimation('introAnimation'); // Ensure you have an 'introAnimation' asset loaded
-    introSprite.play();
-    console.log("IntroPlayed");
-};
+// Initialize the application
+handleLocation();
