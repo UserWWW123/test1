@@ -5,18 +5,20 @@
         <meta charset="UTF-8" />
         <link rel="stylesheet" href="styles.css" />
         <link href="https://cdn.jsdelivr.net/npm/@mdi/font@6.5.95/css/materialdesignicons.min.css" rel="stylesheet" />
-        <script>
-            // Override the playIntro function before p5play loads
-            window.p5play = {
-                playIntro: function() { 
-                    console.log("p5play intro disabled");
-                    return Promise.resolve();
-                }
-            };
-        </script>
-        <script src="https://q5js.org/q5.js"></script>
-        <script src="https://p5play.org/v3/planck.min.js"></script>
-        <script src="https://p5play.org/v3/p5play.js"></script>
+<script>
+    // Override the playIntro function before p5play loads
+    window.p5play = {
+        playIntro: function() { 
+            console.log("p5play intro disabled");
+            return Promise.resolve();
+        }
+    };
+</script>
+<script src="https://q5js.org/q5.js"></script>
+<script src="https://p5play.org/v3/planck.min.js"></script>
+<script src="https://p5play.org/v3/p5play.js"></script>
+<script src="router.js"></script>
+
     </head>
 
     <body>
