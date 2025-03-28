@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="test.css">
+</head>
+<body>
+
+    <script src="test.js"></script>
+
+    <script>
+        if (window.location) {
+            let lh = location.hostname;
+            switch (lh) {
+                case '127.0.0.1':
+                    // Disable playIntro
+                    window.playIntro;
+                    break;
+            }
+        }
+    </script>
+        
+    <script src="https://q5js.org/q5.js"></script>  
+    <script src="https://p5play.org/v3/planck.min.js"></script>
+    <script src="https://p5play.org/v3/p5play.js"></script>
+
+    <script src = "testGame.js"></script>
+    <div id = "box">
+        <script src = "testGame.js"></script>
+    <nav>
+        <span class="logo">AM.IO</span>
+        <ul class="menu">
+            <li class="menu__item" value="home">Home</li>
+            <li class="menu__item" value="about">About</li>
+            <li class="menu__item" value="pricing">Pricing</li>
+        </ul>
+    </nav>
+
+    <main>
+
+        <section id="container"></section>
+    </main>
+    <footer>&copy; 2022 AM.IO</footer>
+
+</body>
+</html>
