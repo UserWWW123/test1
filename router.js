@@ -13,10 +13,10 @@ const canvasInstances = {};
 
 // Map of div IDs to use for each route
 const routeDivMap = {
-    '/variable-declaration': 'overlapVariableDeclaration',
-    '/box': 'box',
-    '/const-declaration': 'overlapVariableDeclaration2',
-    '/var-declaration': 'overlapVariableDeclaration3'
+    '/': 'overlapVariableDeclaration',
+    '/about': 'box',
+    '/index': 'overlapVariableDeclaration2',
+    '/lorem': 'overlapVariableDeclaration3'
 };
 
 // Original sketch functions
