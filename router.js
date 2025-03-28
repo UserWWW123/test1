@@ -1,156 +1,148 @@
-// Global flag to track if intro has been played
-let hasPlayedIntro = false;
+// Single global p5 instance
+let globalP5Instance = null;
 
-// More aggressive approach to disable p5play intro
-function disableP5PlayIntro() {
-    // Method 1: Override the playIntro function
-    if (!window.p5play) {
-        window.p5play = {};
-    }
-    window.p5play.playIntro = function() {
-        console.log("p5play intro disabled via override");
-        return Promise.resolve();
-    };
-    
-    // Method 2: Set a flag that p5play checks
+// Track current page and sprites
+let currentPage = '/';
+let currentSprites = [];
+
+// Initialize p5 only once
+function initializeP5() {
+    // Try to disable p5play intro animation
+    if (!window.p5play) window.p5play = {};
+    window.p5play.playIntro = () => Promise.resolve();
     window._hasP5PlayIntroPlayed = true;
     
-    // Method 3: Try to patch the p5play library if it's already loaded
-    if (window.p5play && window.p5play.Sprite) {
-        console.log("p5play already loaded, patching directly");
-        window.p5play._hasPlayedIntro = true;
-    }
-}
-
-// Call this immediately and before any p5 instances are created
-disableP5PlayIntro();
-
-// Current active p5 instance
-let currentP5Instance = null;
-
-// Define sketch functions for each route
-const sketches = {
-    '/': (p) => {
-        let circle, rectangle;
-        
-        p.preload = () => {
-            // Disable intro again in preload
-            disableP5PlayIntro();
-        };
-        
+    const sketch = (p) => {
         p.setup = () => {
-            // Disable intro again in setup
-            disableP5PlayIntro();
-            
             const canvas = p.createCanvas(600, 400);
-            p.background('pink');
             
-            // Create sprites for home page
-            circle = new p.Sprite(200, 200, 50);
-            circle.color = 'red';
+            // Find or create canvas container
+            let container = document.getElementById('canvas-container2');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'canvas-container2';
+                document.querySelector('.page-container')?.appendChild(container);
+            }
+            canvas.parent(container);
             
-            rectangle = new p.Sprite(400, 200, 80, 40);
-            rectangle.color = 'purple';
-            
-            console.log("Home page canvas created with circle and rectangle");
+            console.log("Global p5 instance initialized");
         };
         
         p.draw = () => {
-            p.background('pink');
-            
-            // Custom drawing/animation for home page
-            circle.rotation += 0.01;
-            rectangle.position.y = 200 + Math.sin(p.frameCount * 0.05) * 50;
-        };
-    },
-    
-    '/about': (p) => {
-        let triangle;
-        
-        p.preload = () => {
-            // Disable intro again in preload
-            disableP5PlayIntro();
-        };
-        
-        p.setup = () => {
-            // Disable intro again in setup
-            disableP5PlayIntro();
-            
-            const canvas = p.createCanvas(600, 400);
-            p.background('lightblue');
-            
-            // Create sprites for about page
-            triangle = new p.Sprite(300, 200);
-            triangle.color = 'yellow';
-            triangle.collider = 'none'; // No physics collision
-            
-            // Custom triangle shape
-            triangle.draw = () => {
-                p.fill(triangle.color);
-                p.noStroke();
-                p.triangle(0, 30, -30, -15, 30, -15);
-            };
-            
-            console.log("About page canvas created with triangle");
-        };
-        
-        p.draw = () => {
-            p.background('lightblue');
-            
-            // Custom drawing/animation for about page
-            triangle.scale = 1 + Math.sin(p.frameCount * 0.05) * 0.2;
-            triangle.rotation += 0.02;
-        };
-    },
-    
-    '/lorem': (p) => {
-        let stars = [];
-        
-        p.preload = () => {
-            // Disable intro again in preload
-            disableP5PlayIntro();
-        };
-        
-        p.setup = () => {
-            // Disable intro again in setup
-            disableP5PlayIntro();
-            
-            const canvas = p.createCanvas(600, 400);
-            p.background('darkblue');
-            
-            // Create stars for lorem page
-            for (let i = 0; i < 50; i++) {
-                let star = new p.Sprite(
-                    p.random(canvas.width),
-                    p.random(canvas.height),
-                    p.random(2, 5)
-                );
-                star.color = 'white';
-                star.collider = 'none';
-                stars.push(star);
+            // Update based on current page
+            if (currentPage === '/') {
+                p.background('pink');
+            } else if (currentPage === '/about') {
+                p.background('lightblue');
+            } else if (currentPage === '/lorem') {
+                p.background('darkblue');
+            } else {
+                p.background(240);
             }
             
-            console.log("Lorem page canvas created with stars");
+            // Any additional page-specific drawing can be done here
+        };
+    };
+    
+    globalP5Instance = new p5(sketch);
+}
+
+// Page-specific setup functions
+const pageSetups = {
+    '/': () => {
+        clearSprites();
+        
+        // Create sprites for home page
+        const p = globalP5Instance;
+        
+        const circle = new p.Sprite(200, 200, 50);
+        circle.color = 'red';
+        
+        const rectangle = new p.Sprite(400, 200, 80, 40);
+        rectangle.color = 'purple';
+        
+        // Store references to sprites
+        currentSprites.push(circle, rectangle);
+        
+        // Add custom update behavior
+        circle.update = function() {
+            this.rotation += 0.01;
         };
         
-        p.draw = () => {
-            p.background('darkblue');
-            
-            // Make stars twinkle
-            stars.forEach(star => {
-                star.scale = 0.5 + Math.random() * 0.5;
-            });
+        rectangle.update = function() {
+            this.position.y = 200 + Math.sin(p.frameCount * 0.05) * 50;
         };
+        
+        console.log("Home page sprites created");
+    },
+    
+    '/about': () => {
+        clearSprites();
+        
+        // Create sprites for about page
+        const p = globalP5Instance;
+        
+        const triangle = new p.Sprite(300, 200);
+        triangle.color = 'yellow';
+        triangle.collider = 'none';
+        
+        // Custom triangle shape
+        triangle.draw = () => {
+            p.fill(triangle.color);
+            p.noStroke();
+            p.triangle(0, 30, -30, -15, 30, -15);
+        };
+        
+        // Add custom update behavior
+        triangle.update = function() {
+            this.scale = 1 + Math.sin(p.frameCount * 0.05) * 0.2;
+            this.rotation += 0.02;
+        };
+        
+        // Store reference to sprite
+        currentSprites.push(triangle);
+        
+        console.log("About page sprites created");
+    },
+    
+    '/lorem': () => {
+        clearSprites();
+        
+        // Create sprites for lorem page
+        const p = globalP5Instance;
+        
+        // Create stars
+        for (let i = 0; i < 50; i++) {
+            const star = new p.Sprite(
+                p.random(p.width),
+                p.random(p.height),
+                p.random(2, 5)
+            );
+            star.color = 'white';
+            star.collider = 'none';
+            
+            // Add custom update behavior
+            star.update = function() {
+                this.scale = 0.5 + Math.random() * 0.5;
+            };
+            
+            // Store reference to sprite
+            currentSprites.push(star);
+        }
+        
+        console.log("Lorem page sprites created");
     }
 };
 
-// Create a wrapper for p5 creation that ensures intro is disabled
-function createP5Instance(sketch, container) {
-    // Disable intro before creating p5 instance
-    disableP5PlayIntro();
-    
-    // Create the p5 instance
-    return new p5(sketch, container);
+// Helper function to clear all sprites
+function clearSprites() {
+    currentSprites.forEach(sprite => {
+        if (sprite && sprite.remove) {
+            sprite.remove();
+        }
+    });
+    currentSprites = [];
+    console.log("All sprites cleared");
 }
 
 const route = (event) => {
@@ -181,32 +173,26 @@ const handleLocation = async () => {
         
         document.getElementById("main-page").innerHTML = html;
         
-        // Store the current page
-        window.currentPage = path;
+        // Update current page
+        currentPage = path;
         
-        // Remove existing canvas if it exists
-        if (currentP5Instance) {
-            currentP5Instance.remove();
-            currentP5Instance = null;
-            console.log("Previous canvas removed");
+        // Initialize p5 if not already done
+        if (!globalP5Instance) {
+            initializeP5();
         }
         
-        // Create new canvas if there's a sketch for this route
-        if (sketches[path]) {
-            // Disable intro again before creating new instance
-            disableP5PlayIntro();
-            
-            // Find or create canvas container
-            let container = document.getElementById('canvas-container2');
-            if (!container) {
-                container = document.createElement('div');
-                container.id = 'canvas-container2';
-                document.querySelector('.page-container')?.appendChild(container);
-            }
-            
-            // Create new p5 instance with the appropriate sketch
-            currentP5Instance = createP5Instance(sketches[path], 'canvas-container2');
-            console.log(`Created new canvas for ${path}`);
+        // Setup page-specific sprites
+        if (pageSetups[path]) {
+            pageSetups[path]();
+        } else {
+            // Clear sprites for pages without specific setup
+            clearSprites();
+        }
+        
+        // Make sure canvas is in the right container
+        const container = document.getElementById('canvas-container2');
+        if (container && globalP5Instance.canvas && globalP5Instance.canvas.parentElement !== container) {
+            container.appendChild(globalP5Instance.canvas);
         }
     } catch (error) {
         console.error('Error loading page:', error);
@@ -216,9 +202,6 @@ const handleLocation = async () => {
 
 window.onpopstate = handleLocation;
 window.route = route;
-
-// Disable intro one more time before initializing
-disableP5PlayIntro();
 
 // Initialize the application
 handleLocation();
