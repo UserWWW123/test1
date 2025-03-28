@@ -1,9 +1,8 @@
 const route = (event) => {
     event = event || window.event;
-    event.preventDefault();  // Prevent default link behavior
-    const url = event.target.href;  // Get the href of the clicked link
-    window.history.pushState({}, "", url);  // Change the URL in the browser without reloading
-    handleLocation();  // Handle the location change
+    event.preventDefault();
+    window.history.pushState({}, "", event.target.href);
+    handleLocation();
 };
 
 const routes = {
@@ -16,60 +15,59 @@ const routes = {
 
 const handleLocation = async () => {
     const path = window.location.pathname;
-    const route = routes[path] || routes[404];  // Default to 404 if route is not found
-    const html = await fetch(route).then((data) => data.text());  // Fetch the HTML content for the route
-    document.getElementById("main-page").innerHTML = html;  // Inject the content into the page
+    const route = routes[path] || routes[404];
+    const html = await fetch(route).then((data) => data.text());
+    document.getElementById("main-page").innerHTML = html;
 
-    // Trigger p5.js sketch based on the route
     if (path === "/") {
         startP5Sketch();
-    } else if (path === "/about") {
+    }
+    if (path === "/about") {
         startP5Sketch2();
     }
 };
 
-// Handle the back/forward navigation
 window.onpopstate = handleLocation;
+window.route = route;
 
-// Run the initial load when the page is first loaded or reloaded
 handleLocation();
 
-// When links are clicked, route them correctly
-document.querySelectorAll('a').forEach((link) => {
-    link.onclick = route;
-});
-
-// p5.js Sketch for Home page
 let p5Instance = null;
 const startP5Sketch = () => {
-    if (p5Instance) {
+
+    if(p5Instance){
         p5Instance.remove();
     }
+
     let sketch = (p) => {
         p.setup = () => {
             p.createCanvas(600, 400);
             p.background("lightblue");
         };
+
         p.draw = () => {
             p.background("lightblue");
             p.fill(0);
             p.textSize(20);
-            p.text("This is the Home Page Canvas", 100, 200);
+            p.text("This is the About Page Canvas", 100, 200);
         };
     };
-    p5Instance = new p5(sketch, "canvas-container");
+
+    p5Instance = new p5(sketch, "canvas-container"); // Attach to a div in about.html
 };
 
-// p5.js Sketch for About page
 const startP5Sketch2 = () => {
-    if (p5Instance) {
+
+    if(p5Instance){
         p5Instance.remove();
     }
+
     let sketch = (p) => {
         p.setup = () => {
             p.createCanvas(600, 400);
             p.background("lightblue");
         };
+
         p.draw = () => {
             p.background("green");
             p.fill(0);
@@ -77,5 +75,6 @@ const startP5Sketch2 = () => {
             p.text("This is the About Page Canvas", 100, 200);
         };
     };
-    p5Instance = new p5(sketch, "canvas-container2");
+
+    p5Instance = new p5(sketch, "canvas-container2"); // Attach to a div in about.html
 };
