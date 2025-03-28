@@ -35,6 +35,11 @@ handleLocation();
 let p5Instance = null;
 const startP5Sketch = () => {
 
+    if (!localStorage.getItem('introPlayed')) {
+        playIntro();
+        localStorage.setItem('introPlayed', 'true');  // Mark as played
+    }
+
     if(p5Instance){
         p5Instance.remove();
     }
@@ -77,4 +82,11 @@ const startP5Sketch2 = () => {
     };
 
     p5Instance = new p5(sketch, "canvas-container2"); // Attach to a div in about.html
+};
+
+const playIntro = () => {
+    const introSprite = createSprite(300, 200, 50, 50);
+    introSprite.setAnimation('introAnimation'); // Add your intro animation here
+    introSprite.play(); // Example play intro animation
+    console.log("IntroPlayed");
 };
