@@ -1,15 +1,29 @@
-// Track if intro has been played
+// Global flag to track if intro has been played
 let hasPlayedIntro = false;
 
-// Disable p5play intro animation globally
-if (!window.p5play) {
-    window.p5play = {};
+// More aggressive approach to disable p5play intro
+function disableP5PlayIntro() {
+    // Method 1: Override the playIntro function
+    if (!window.p5play) {
+        window.p5play = {};
+    }
+    window.p5play.playIntro = function() {
+        console.log("p5play intro disabled via override");
+        return Promise.resolve();
+    };
+    
+    // Method 2: Set a flag that p5play checks
+    window._hasP5PlayIntroPlayed = true;
+    
+    // Method 3: Try to patch the p5play library if it's already loaded
+    if (window.p5play && window.p5play.Sprite) {
+        console.log("p5play already loaded, patching directly");
+        window.p5play._hasPlayedIntro = true;
+    }
 }
 
-window.p5play.playIntro = function() {
-    console.log("p5play intro disabled");
-    return Promise.resolve();
-};
+// Call this immediately and before any p5 instances are created
+disableP5PlayIntro();
 
 // Current active p5 instance
 let currentP5Instance = null;
@@ -19,7 +33,15 @@ const sketches = {
     '/': (p) => {
         let circle, rectangle;
         
+        p.preload = () => {
+            // Disable intro again in preload
+            disableP5PlayIntro();
+        };
+        
         p.setup = () => {
+            // Disable intro again in setup
+            disableP5PlayIntro();
+            
             const canvas = p.createCanvas(600, 400);
             p.background('pink');
             
@@ -45,7 +67,15 @@ const sketches = {
     '/about': (p) => {
         let triangle;
         
+        p.preload = () => {
+            // Disable intro again in preload
+            disableP5PlayIntro();
+        };
+        
         p.setup = () => {
+            // Disable intro again in setup
+            disableP5PlayIntro();
+            
             const canvas = p.createCanvas(600, 400);
             p.background('lightblue');
             
@@ -76,7 +106,15 @@ const sketches = {
     '/lorem': (p) => {
         let stars = [];
         
+        p.preload = () => {
+            // Disable intro again in preload
+            disableP5PlayIntro();
+        };
+        
         p.setup = () => {
+            // Disable intro again in setup
+            disableP5PlayIntro();
+            
             const canvas = p.createCanvas(600, 400);
             p.background('darkblue');
             
@@ -105,6 +143,15 @@ const sketches = {
         };
     }
 };
+
+// Create a wrapper for p5 creation that ensures intro is disabled
+function createP5Instance(sketch, container) {
+    // Disable intro before creating p5 instance
+    disableP5PlayIntro();
+    
+    // Create the p5 instance
+    return new p5(sketch, container);
+}
 
 const route = (event) => {
     event = event || window.event;
@@ -146,6 +193,9 @@ const handleLocation = async () => {
         
         // Create new canvas if there's a sketch for this route
         if (sketches[path]) {
+            // Disable intro again before creating new instance
+            disableP5PlayIntro();
+            
             // Find or create canvas container
             let container = document.getElementById('canvas-container2');
             if (!container) {
@@ -155,7 +205,7 @@ const handleLocation = async () => {
             }
             
             // Create new p5 instance with the appropriate sketch
-            currentP5Instance = new p5(sketches[path], 'canvas-container2');
+            currentP5Instance = createP5Instance(sketches[path], 'canvas-container2');
             console.log(`Created new canvas for ${path}`);
         }
     } catch (error) {
@@ -166,6 +216,9 @@ const handleLocation = async () => {
 
 window.onpopstate = handleLocation;
 window.route = route;
+
+// Disable intro one more time before initializing
+disableP5PlayIntro();
 
 // Initialize the application
 handleLocation();
