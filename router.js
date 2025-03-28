@@ -37,8 +37,9 @@ window.route = route;
 handleLocation();
 
 let p5Instance = null;
+
 const startP5Sketch = () => {
-    if(p5Instance){
+    if (p5Instance) {
         p5Instance.remove();
     }
 
@@ -52,15 +53,15 @@ const startP5Sketch = () => {
             p.background("lightblue");
             p.fill(0);
             p.textSize(20);
-            p.text("This is the About Page Canvas", 100, 200);
+            p.text("This is the Home Page Canvas", 100, 200);
         };
     };
 
-    p5Instance = new p5(sketch, "canvas-container"); // Attach to a div in about.html
+    p5Instance = new p5(sketch, "canvas-container"); // Attach to a div in index.html
 };
 
 const startP5Sketch2 = () => {
-    if(p5Instance){
+    if (p5Instance) {
         p5Instance.remove();
     }
 
@@ -82,8 +83,14 @@ const startP5Sketch2 = () => {
 };
 
 const playIntro = () => {
+    // Ensure p5.play is loaded before using createSprite
+    if (typeof createSprite === 'undefined') {
+        console.error('createSprite is not defined. Make sure p5.play is loaded.');
+        return;
+    }
+
     const introSprite = createSprite(300, 200, 50, 50);
-    introSprite.setAnimation('introAnimation');
+    introSprite.setAnimation('introAnimation'); // Ensure you have an 'introAnimation' asset loaded
     introSprite.play();
     console.log("IntroPlayed");
 };
