@@ -1,51 +1,8 @@
-// Global p5 instance that persists across page changes
-let p5Instance = null;
+// Flag to track if intro has been played
 let hasPlayedIntro = false;
 
-// Initialize p5 only once when the page first loads
-window.addEventListener('load', () => {
-    if (!p5Instance) {
-        initializeP5();
-    }
-});
-
-function initializeP5() {
-    let sketch = (p) => {
-        p.setup = () => {
-            // Create a canvas that will be used across all pages
-            const canvas = p.createCanvas(600, 400);
-            // Find or create canvas container
-            let container = document.getElementById('canvas-container2');
-            if (!container) {
-                container = document.createElement('div');
-                container.id = 'canvas-container2';
-                document.querySelector('.page-container')?.appendChild(container);
-            }
-            canvas.parent(container);
-            hasPlayedIntro = true;
-        };
-
-        p.draw = () => {
-            // This will be updated based on the current page
-            if (window.currentPage === '/') {
-                p.background('lightblue');
-                p.fill(0);
-                p.textSize(20);
-                p.text("This is the Home Page Canvas", 100, 200);
-            } else if (window.currentPage === '/about') {
-                p.background('green');
-                p.fill(0);
-                p.textSize(20);
-                p.text("This is the About Page Canvas", 100, 200);
-            } else {
-                // Default for other pages
-                p.background(240);
-            }
-        };
-    };
-
-    p5Instance = new p5(sketch);
-}
+// Store the current p5 instance
+let p5Instance = null;
 
 const route = (event) => {
     event = event || window.event;
@@ -73,30 +30,104 @@ const handleLocation = async () => {
         }
         const html = await response.text();
         
+        // Remove existing p5 instance if it exists
+        if (p5Instance) {
+            p5Instance.remove();
+            p5Instance = null;
+        }
+        
         document.getElementById("main-page").innerHTML = html;
         
-        // Store the current page for the p5 sketch to use
-        window.currentPage = path;
-        
-        // If p5 instance doesn't exist yet, create it
-        if (!p5Instance) {
-            initializeP5();
-        } else {
-            // If canvas container was replaced, re-parent the canvas
-            const container = document.getElementById('canvas-container2');
-            if (container && p5Instance.canvas.parentElement !== container) {
-                container.appendChild(p5Instance.canvas);
-            }
+        // Create the appropriate sketch based on the current path
+        if (path === "/") {
+            createHomeSketch();
+        } else if (path === "/about") {
+            createAboutSketch();
         }
+        // Add more page-specific sketches as needed
+        
     } catch (error) {
         console.error('Error loading page:', error);
-        // Handle the error appropriately
         document.getElementById("main-page").innerHTML = '<h1>Error loading page</h1>';
     }
 };
 
+// Create the home page sketch
+function createHomeSketch() {
+    let sketch = (p) => {
+        p.setup = () => {
+            const canvas = p.createCanvas(600, 400);
+            const container = document.getElementById('canvas-container');
+            if (container) {
+                canvas.parent(container);
+            }
+            p.background("lightblue");
+        };
+
+        p.draw = () => {
+            p.background("lightblue");
+            p.fill(0);
+            p.textSize(20);
+            p.text("This is the Home Page Canvas", 100, 200);
+        };
+    };
+
+    // Create new p5 instance with the sketch
+    p5Instance = new p5(sketch);
+}
+
+// Create the about page sketch
+function createAboutSketch() {
+    let sketch = (p) => {
+        p.setup = () => {
+            const canvas = p.createCanvas(600, 400);
+            const container = document.getElementById('canvas-container2');
+            if (container) {
+                canvas.parent(container);
+            }
+            p.background("green");
+        };
+
+        p.draw = () => {
+            p.background("green");
+            p.fill(0);
+            p.textSize(20);
+            p.text("This is the About Page Canvas", 100, 200);
+        };
+    };
+
+    // Create new p5 instance with the sketch
+    p5Instance = new p5(sketch);
+}
+
 window.onpopstate = handleLocation;
 window.route = route;
+
+// Override p5play intro function globally
+// This needs to be done before p5play is loaded
+if (!window.p5play) {
+    window.p5play = {};
+}
+
+// Store the original playIntro function if it exists
+const originalPlayIntro = window.p5play.playIntro;
+
+// Replace with our version that only plays once
+window.p5play.playIntro = function() {
+    if (hasPlayedIntro) {
+        console.log("Skipping p5play intro (already played)");
+        return Promise.resolve();
+    }
+    
+    console.log("Playing p5play intro (first time only)");
+    hasPlayedIntro = true;
+    
+    // Either call original or return resolved promise
+    if (originalPlayIntro) {
+        return originalPlayIntro.apply(this, arguments);
+    }
+    return Promise.resolve();
+};
 
 // Initialize the application
 handleLocation();
