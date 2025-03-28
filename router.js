@@ -1,3 +1,8 @@
+// Add this at the very beginning of your code
+window.p5play = {
+    disableIntro: true
+};
+
 const route = (event) => {
     event = event || window.event;
     event.preventDefault();
@@ -13,18 +18,16 @@ const routes = {
     "/lorem": "/pages2/lorem.html",
 };
 
-// Disable p5play intro globally when the page first loads
-window.addEventListener('load', () => {
-    if (window.p5play) {
-        window.p5play.disableIntro = true;
-    }
-});
-
 const handleLocation = async () => {
     const path = window.location.pathname;
     const route = routes[path] || routes[404];
     const html = await fetch(route).then((data) => data.text());
     document.getElementById("main-page").innerHTML = html;
+
+    // Ensure p5play intro is disabled
+    if (window.p5play) {
+        window.p5play.disableIntro = true;
+    }
 
     if (path === "/") {
         startP5Sketch();
@@ -43,14 +46,15 @@ const startP5Sketch = () => {
         p5Instance.remove();
     }
 
-    // Ensure p5play intro is disabled before creating new instance
-    if (window.p5play) {
-        window.p5play.disableIntro = true;
-    }
-
     let sketch = (p) => {
+        p.disableFriendlyErrors = true; // Optional: for better performance
+        
         p.setup = () => {
             p.createCanvas(600, 400);
+            // Disable intro explicitly in setup
+            if (window.p5play) {
+                window.p5play.disableIntro = true;
+            }
             p.background("lightblue");
         };
 
@@ -70,14 +74,15 @@ const startP5Sketch2 = () => {
         p5Instance.remove();
     }
 
-    // Ensure p5play intro is disabled before creating new instance
-    if (window.p5play) {
-        window.p5play.disableIntro = true;
-    }
-
     let sketch = (p) => {
+        p.disableFriendlyErrors = true; // Optional: for better performance
+        
         p.setup = () => {
             p.createCanvas(600, 400);
+            // Disable intro explicitly in setup
+            if (window.p5play) {
+                window.p5play.disableIntro = true;
+            }
             p.background("lightblue");
         };
 
