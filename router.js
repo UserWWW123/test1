@@ -1,6 +1,7 @@
-// Global p5 instance that persists across page changes
+// Global p5 instance and sprites that persist across page changes
 let p5Instance = null;
 let currentPage = "/";
+let rectangle, circle, triangle;
 
 // Initialize p5 only once when the page first loads
 window.addEventListener('load', () => {
@@ -12,30 +13,70 @@ window.addEventListener('load', () => {
 function createPersistentSketch() {
     let sketch = (p) => {
         p.setup = () => {
-            // Create a canvas that will be used across all pages
             const canvas = p.createCanvas(600, 400);
-            // We'll parent this canvas to the appropriate container later
+            
+            // Create sprites
+            // Rectangle for home page
+            rectangle = new p.Sprite(300, 100, 100, 50);
+            rectangle.color = 'blue';
+            rectangle.gravity = 1;
+            rectangle.bounciness = 0.7;
+            
+            // Circle and triangle for about page
+            circle = new p.Sprite(300, 50, 40);
+            circle.color = 'red';
+            circle.gravity = 10;
+            circle.bounciness = 0.7;
+            
+            // Static triangle
+            triangle = new p.Sprite(300, 300);
+            triangle.color = 'yellow';
+            triangle.static = true;
+            // Create triangle shape using vertices
+            triangle.vertices = [
+                {x: -40, y: 40},
+                {x: 40, y: 40},
+                {x: 0, y: -40}
+            ];
+            
+            // Initially hide all sprites
+            rectangle.visible = false;
+            circle.visible = false;
+            triangle.visible = false;
         };
 
         p.draw = () => {
-            // Change drawing based on current page
             if (currentPage === "/") {
                 p.background("lightblue");
-                p.fill(0);
-                p.textSize(20);
-                p.text("This is the Home Page Canvas", 100, 200);
+                // Show only rectangle on home page
+                rectangle.visible = true;
+                circle.visible = false;
+                triangle.visible = false;
+                
+                // Reset rectangle position if it goes off screen
+                if (rectangle.y > p.height + 100) {
+                    rectangle.y = -50;
+                    rectangle.velocity.y = 0;
+                }
+                
             } else if (currentPage === "/about") {
                 p.background("green");
-                p.fill(0);
-                p.textSize(20);
-                p.text("This is the About Page Canvas", 100, 200);
-            } else if (currentPage === "/lorem") {
-                p.background("orange");
-                p.fill(0);
-                p.textSize(20);
-                p.text("This is the Lorem Page Canvas", 100, 200);
+                // Show only circle and triangle on about page
+                rectangle.visible = false;
+                circle.visible = true;
+                triangle.visible = true;
+                
+                // Reset circle position if it goes off screen
+                if (circle.y > p.height + 100) {
+                    circle.y = -50;
+                    circle.velocity.y = 0;
+                }
+                
             } else {
-                p.background(240);
+                // Hide all sprites on other pages
+                rectangle.visible = false;
+                circle.visible = false;
+                triangle.visible = false;
             }
         };
     };
@@ -79,18 +120,19 @@ const handleLocation = async () => {
             createPersistentSketch();
         }
         
-        // Move the canvas to the appropriate container
+        // Only show canvas on home and about pages
         if (p5Instance) {
-            let containerId = 'canvas-container';
-            if (path === '/about') {
-                containerId = 'canvas-container2';
-            } else if (path === '/lorem') {
-                containerId = 'canvas-container3';
-            }
-            
-            const container = document.getElementById(containerId);
-            if (container) {
-                container.appendChild(p5Instance.canvas);
+            if (path === '/' || path === '/about') {
+                const containerId = path === '/' ? 'canvas-container' : 'canvas-container2';
+                const container = document.getElementById(containerId);
+                if (container) {
+                    container.appendChild(p5Instance.canvas);
+                }
+            } else {
+                // Remove canvas from DOM if we're on any other page
+                if (p5Instance.canvas.parentElement) {
+                    p5Instance.canvas.parentElement.removeChild(p5Instance.canvas);
+                }
             }
         }
         
