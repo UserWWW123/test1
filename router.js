@@ -14,9 +14,14 @@ function initializeP5() {
         p.setup = () => {
             // Create a canvas that will be used across all pages
             const canvas = p.createCanvas(600, 400);
-            canvas.parent('main-page');
-            
-            // Store that we've played the intro
+            // Find or create canvas container
+            let container = document.getElementById('canvas-container2');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'canvas-container2';
+                document.querySelector('.page-container')?.appendChild(container);
+            }
+            canvas.parent(container);
             hasPlayedIntro = true;
         };
 
@@ -50,44 +55,43 @@ const route = (event) => {
 };
 
 const routes = {
-    404: "/pages2/404.html",
+    "/404": "/pages2/404.html",
     "/index.html": "/pages2/index.html",
     "/": "/pages2/index.html",
     "/about": "/pages2/about.html",
-    "/lorem": "/pages2/lorem.html",
+    "/lorem": "/pages2/lorem.html"
 };
 
 const handleLocation = async () => {
     const path = window.location.pathname;
-    const route = routes[path] || routes[404];
-    const html = await fetch(route).then((data) => data.text());
+    const route = routes[path] || routes["/404"];
     
-    // Create a temporary container to hold the HTML
-    const tempContainer = document.createElement('div');
-    tempContainer.innerHTML = html;
-    
-    // Find the content element in the loaded HTML
-    const contentElement = tempContainer.querySelector('#content') || tempContainer;
-    
-    // Update only the content part of the page
-    const mainPage = document.getElementById("main-page");
-    
-    // Create or update the content div
-    let contentDiv = mainPage.querySelector('#content');
-    if (!contentDiv) {
-        contentDiv = document.createElement('div');
-        contentDiv.id = 'content';
-        mainPage.appendChild(contentDiv);
-    }
-    
-    contentDiv.innerHTML = contentElement.innerHTML;
-    
-    // Store the current page for the p5 sketch to use
-    window.currentPage = path;
-    
-    // If p5 instance doesn't exist yet, create it
-    if (!p5Instance) {
-        initializeP5();
+    try {
+        const response = await fetch(route);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const html = await response.text();
+        
+        document.getElementById("main-page").innerHTML = html;
+        
+        // Store the current page for the p5 sketch to use
+        window.currentPage = path;
+        
+        // If p5 instance doesn't exist yet, create it
+        if (!p5Instance) {
+            initializeP5();
+        } else {
+            // If canvas container was replaced, re-parent the canvas
+            const container = document.getElementById('canvas-container2');
+            if (container && p5Instance.canvas.parentElement !== container) {
+                container.appendChild(p5Instance.canvas);
+            }
+        }
+    } catch (error) {
+        console.error('Error loading page:', error);
+        // Handle the error appropriately
+        document.getElementById("main-page").innerHTML = '<h1>Error loading page</h1>';
     }
 };
 
