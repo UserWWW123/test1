@@ -20,6 +20,10 @@ const handleLocation = async () => {
     document.getElementById("main-page").innerHTML = html;
 
     if (path === "/") {
+        if (!localStorage.getItem('introPlayed')) {
+            playIntro();
+            localStorage.setItem('introPlayed', 'true'); 
+        }
         startP5Sketch();
     }
     if (path === "/about") {
@@ -34,12 +38,6 @@ handleLocation();
 
 let p5Instance = null;
 const startP5Sketch = () => {
-
-    if (!localStorage.getItem('introPlayed')) {
-        playIntro();
-        localStorage.setItem('introPlayed', 'true');  // Mark as played
-    }
-
     if(p5Instance){
         p5Instance.remove();
     }
@@ -62,7 +60,6 @@ const startP5Sketch = () => {
 };
 
 const startP5Sketch2 = () => {
-
     if(p5Instance){
         p5Instance.remove();
     }
@@ -86,7 +83,7 @@ const startP5Sketch2 = () => {
 
 const playIntro = () => {
     const introSprite = createSprite(300, 200, 50, 50);
-    introSprite.setAnimation('introAnimation'); // Add your intro animation here
-    introSprite.play(); // Example play intro animation
+    introSprite.setAnimation('introAnimation');
+    introSprite.play();
     console.log("IntroPlayed");
 };
