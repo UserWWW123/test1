@@ -1,7 +1,16 @@
-// Add this at the very beginning of your code
-window.p5play = {
-    disableIntro: true
-};
+// Create a script element to inject code that will run before p5play loads
+const disableIntroScript = document.createElement('script');
+disableIntroScript.textContent = `
+    // Override the playIntro function before it's defined
+    window.p5play = window.p5play || {};
+    window.p5play.playIntro = function() { 
+        console.log("p5play intro disabled");
+        return Promise.resolve(); // Return a resolved promise to continue initialization
+    };
+`;
+
+// Insert this script at the beginning of the head to ensure it runs first
+document.head.insertBefore(disableIntroScript, document.head.firstChild);
 
 const route = (event) => {
     event = event || window.event;
@@ -24,11 +33,6 @@ const handleLocation = async () => {
     const html = await fetch(route).then((data) => data.text());
     document.getElementById("main-page").innerHTML = html;
 
-    // Ensure p5play intro is disabled
-    if (window.p5play) {
-        window.p5play.disableIntro = true;
-    }
-
     if (path === "/") {
         startP5Sketch();
     }
@@ -47,14 +51,8 @@ const startP5Sketch = () => {
     }
 
     let sketch = (p) => {
-        p.disableFriendlyErrors = true; // Optional: for better performance
-        
         p.setup = () => {
             p.createCanvas(600, 400);
-            // Disable intro explicitly in setup
-            if (window.p5play) {
-                window.p5play.disableIntro = true;
-            }
             p.background("lightblue");
         };
 
@@ -75,14 +73,8 @@ const startP5Sketch2 = () => {
     }
 
     let sketch = (p) => {
-        p.disableFriendlyErrors = true; // Optional: for better performance
-        
         p.setup = () => {
             p.createCanvas(600, 400);
-            // Disable intro explicitly in setup
-            if (window.p5play) {
-                window.p5play.disableIntro = true;
-            }
             p.background("lightblue");
         };
 
